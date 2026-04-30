@@ -6,7 +6,8 @@ import asyncio
 
 
 nonebot.init()
-
+driver = nonebot.get_driver()
+driver.register_adapter(ONEBOT_V11Adapter)
 app: FastAPI = get_app()
 
 async def list_routes():
@@ -20,10 +21,6 @@ async def list_routes():
 async def startup_event():
     await asyncio.sleep(1)  # 等待其他插件加载
     await list_routes()
-
-
-driver = nonebot.get_driver()
-driver.register_adapter(ONEBOT_V11Adapter)
 
 nonebot.load_from_toml("pyproject.toml")
 
