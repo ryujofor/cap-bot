@@ -18,14 +18,17 @@ driver = get_driver()
 image_api_key = str(getattr(driver.config, "image_api_key", ""))
 
 
-# 仅私聊触发
-def is_private() -> Rule:
+# 仅私聊且消息以 "i2" 开头时触发
+def is_private_i2() -> Rule:
     async def _check(event: MessageEvent) -> bool:
-        return event.message_type == "private"
+        if event.message_type != "private":
+            return False
+        text = event.message.extract_plain_text().strip()
+        return text.startswith("i2")
     return Rule(_check)
 
 
-image_gen = on_message(rule=is_private(), priority=10)
+image_gen = on_message(rule=is_private_i2(), priority=10)
 
 
 @image_gen.handle()
@@ -37,8 +40,10 @@ async def handle_image_gen(bot: Bot, event: MessageEvent, msg: Message = EventMe
             text_parts.append(seg.data.get("text", "").strip())
 
     prompt = " ".join(filter(None, text_parts))
+    if prompt.startswith("i2"):
+        prompt = prompt[2:].strip()
     if not prompt:
-        await image_gen.finish("请输入图片描述，例如：一只可爱的猫")
+        await image_gen.finish("请输入图片描述，例如：i2 一只可爱的猫")
 
     await image_gen.send("正在生成图片，请稍候...")
 
