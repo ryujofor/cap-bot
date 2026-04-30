@@ -23,7 +23,7 @@ def create_image(prompt: str, api_key: str, size: str = "1024x1024", model: str 
 
 
 if __name__ == "__main__":
-    API_KEY = "sk-yRxcYwCp0MAP2FzhdCjtKnnOd0iHQVFry9YufA9ZiZ5F8OsK"
+    API_KEY = ""
     prompt_text = "唐僧被如来佛祖请去喝茶，中国神话插画风格"
 
     try:
