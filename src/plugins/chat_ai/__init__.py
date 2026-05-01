@@ -82,7 +82,7 @@ def extract_user_text(event: MessageEvent) -> str:
     return " ".join(text_parts)
 
 
-chat_handler = on_message(rule=is_chat_trigger(), priority=9)
+chat_handler = on_message(rule=is_chat_trigger(), priority=3)
 
 
 @chat_handler.handle()

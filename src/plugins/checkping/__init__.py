@@ -10,7 +10,7 @@ def is_private_keyword(keyword: str) -> Rule:
     return Rule(_check)
 
 
-check_ping = on_message(rule=is_private_keyword("测试"), priority=10)
+check_ping = on_message(rule=is_private_keyword("测试"), priority=1)
 
 
 @check_ping.handle()

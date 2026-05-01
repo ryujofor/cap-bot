@@ -26,7 +26,7 @@ def is_i2_trigger() -> Rule:
     return Rule(_check)
 
 
-i2_handler = on_message(rule=is_i2_trigger(), priority=10)
+i2_handler = on_message(rule=is_i2_trigger(), priority=2)
 
 
 @i2_handler.handle()
@@ -63,7 +63,7 @@ def is_ie_private() -> Rule:
     return Rule(_check)
 
 
-ie_handler = on_message(rule=is_ie_private(), priority=10)
+ie_handler = on_message(rule=is_ie_private(), priority=2)
 
 
 @ie_handler.handle()
