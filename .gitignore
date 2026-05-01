@@ -143,3 +143,4 @@ dmypy.json
 output*.png
 .vscode/
 __pycache__/
+src/plugins/chat_ai/contexts/

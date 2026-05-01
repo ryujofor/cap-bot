@@ -3,6 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[2]))
 
+import json
 import time
 
 import httpx
@@ -17,8 +18,9 @@ driver = get_driver()
 chat_api_key = str(getattr(driver.config, "chat_api_key", ""))
 chat_api_base = str(getattr(driver.config, "chat_api_base", "https://api.jucode.cn/v1"))
 
-# 上下文窗口: {chat_id: {"messages": [...], "expires": timestamp}}
-context_windows: dict[str, dict] = {}
+# 每个聊天窗口的 JSON 文件存储目录
+CONTEXT_DIR = Path(__file__).parent / "contexts"
+CONTEXT_DIR.mkdir(exist_ok=True)
 CONTEXT_TTL = 600  # 10 分钟
 
 
@@ -26,6 +28,35 @@ def get_chat_id(event: MessageEvent) -> str:
     if event.message_type == "private":
         return f"private_{event.user_id}"
     return f"group_{event.group_id}"
+
+
+def get_context_file(chat_id: str) -> Path:
+    return CONTEXT_DIR / f"{chat_id}.json"
+
+
+def load_context(chat_id: str) -> list[dict]:
+    """加载上下文 JSON 文件，如果过期则返回空"""
+    file = get_context_file(chat_id)
+    if not file.exists():
+        return []
+    now = time.time()
+    data = json.loads(file.read_text(encoding="utf-8"))
+    if data.get("expires", 0) < now:
+        # 过期则删除文件（下次自动创建新上下文）
+        file.unlink(missing_ok=True)
+        return []
+    # 续期
+    data["expires"] = now + CONTEXT_TTL
+    file.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return data.get("messages", [])
+
+
+def save_context(chat_id: str, messages: list[dict]):
+    """保存上下文到 JSON 文件"""
+    now = time.time()
+    file = get_context_file(chat_id)
+    data = {"chat_id": chat_id, "expires": now + CONTEXT_TTL, "messages": messages}
+    file.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def is_chat_trigger() -> Rule:
@@ -51,16 +82,6 @@ def extract_user_text(event: MessageEvent) -> str:
     return " ".join(text_parts)
 
 
-def get_or_create_context(chat_id: str) -> list[dict]:
-    now = time.time()
-    ctx = context_windows.get(chat_id)
-    if ctx and ctx["expires"] > now:
-        ctx["expires"] = now + CONTEXT_TTL
-        return ctx["messages"]
-    context_windows[chat_id] = {"messages": [], "expires": now + CONTEXT_TTL}
-    return context_windows[chat_id]["messages"]
-
-
 chat_handler = on_message(rule=is_chat_trigger(), priority=9)
 
 
@@ -71,7 +92,7 @@ async def handle_chat(bot: Bot, event: MessageEvent, msg: Message = EventMessage
     if not user_text:
         return
 
-    messages = get_or_create_context(chat_id)
+    messages = load_context(chat_id)
     messages.append({"role": "user", "content": user_text})
 
     url = f"{chat_api_base}/chat/completions"
@@ -101,6 +122,7 @@ async def handle_chat(bot: Bot, event: MessageEvent, msg: Message = EventMessage
 
     if assistant_text:
         messages.append({"role": "assistant", "content": assistant_text})
+        save_context(chat_id, messages)
         await chat_handler.finish(assistant_text)
     else:
         await chat_handler.finish("AI 未返回有效回复")
