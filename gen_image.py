@@ -22,6 +22,25 @@ def create_image(prompt: str, api_key: str, size: str = "1024x1024", model: str 
     return response.json()
 
 
+def edit_image(image_bytes: bytes, prompt: str, api_key: str, size: str = "1024x1024", model: str = "gpt-image-2"):
+    url = "https://api.jucode.cn/v1/images/edits"
+    headers = {
+        "Authorization": f"Bearer {api_key}"
+    }
+    # 确保图片是 PNG 格式
+    files = {
+        "image": ("image.png", image_bytes, "image/png"),
+        "prompt": (None, prompt),
+        "model": (None, model),
+        "size": (None, size),
+        "n": (None, "1"),
+    }
+
+    response = requests.post(url, headers=headers, files=files)
+    response.raise_for_status()
+    return response.json()
+
+
 if __name__ == "__main__":
     API_KEY = ""
     prompt_text = "唐僧被如来佛祖请去喝茶，中国神话插画风格"
