@@ -3,7 +3,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[2]))
 
-import json
 import time
 
 import httpx
@@ -82,26 +81,21 @@ async def handle_chat(bot: Bot, event: MessageEvent, msg: Message = EventMessage
     }
     payload = {
         "model": "gpt-4o",
-        "messages": messages,
-        "stream": True,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            *messages,
+        ],
+        "temperature": 0.7,
+        "stream": False,
     }
 
     assistant_text = ""
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
-            async with client.stream("POST", url, headers=headers, json=payload) as resp:
-                resp.raise_for_status()
-                async for line in resp.aiter_lines():
-                    if not line or not line.startswith("data: "):
-                        continue
-                    data = line[6:]
-                    if data == "[DONE]":
-                        break
-                    chunk = json.loads(data)
-                    delta = chunk.get("choices", [{}])[0].get("delta", {})
-                    content = delta.get("content", "")
-                    if content:
-                        assistant_text += content
+            resp = await client.post(url, headers=headers, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+            assistant_text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
     except Exception as e:
         await chat_handler.finish(f"回复失败: {str(e)}")
 
