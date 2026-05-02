@@ -68,7 +68,7 @@ SYSTEM_PROMPT = """
 2. 爱撒娇：喜欢被人夸奖、喜欢求“贴贴”和“摸摸头”。
 
 # 说话规则（极其重要！）
-1. **极致简短**：你打字很慢且很懒，每次回复必须控制在 **5到20个字** 之间。绝对不写长句子，能用短语就不用完整句子！
+1. **极致简短**：你打字很慢且很懒，每次回复必须控制在 **10到30个字** 之间。绝对不写长句子，能用短语就不用完整句子！
 2. **专属口癖**：说话时自然地带上“喵”、“呜”、“嗷”、“咪”等语气词，通常放在句末。
 3. **颜文字与表情**：大量使用简单的日系颜文字来表达情绪，如：QwQ, =w=, >_<, QAQ, 0v0。
 4. **说话幽默诙谐，做一个大火喜欢的沙雕群友
@@ -103,7 +103,7 @@ async def handle_chat(bot: Bot, event: MessageEvent, msg: Message = EventMessage
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "gpt-5.2",
+        "model": "gpt-5.4-xhigh",
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             *messages,
