@@ -22,7 +22,7 @@ USERNAME_PREFIX = "[SHK]"
 def is_shk_match_command() -> Rule:
     async def _check(event: MessageEvent) -> bool:
         text = event.message.extract_plain_text().strip()
-        return text.startswith("shkmatch")
+        return text.startswith("sm or SM")
 
     return Rule(_check)
 
@@ -198,10 +198,10 @@ def format_shk_match_message(rows: list[dict[str, Any]]) -> str:
 @shk_match_score.handle()
 async def handle_shk_match_score(event: MessageEvent) -> None:
     text = event.message.extract_plain_text().strip()
-    match_value = text[len("shkmatch"):].strip()
+    match_value = text[len("sm"):].strip()
 
     if not match_value:
-        await shk_match_score.finish("Usage: shkmatch <match url or match id>")
+        await shk_match_score.finish("Usage: sm <match url or match id>")
 
     try:
         rows = await asyncio.to_thread(get_shk_match_rows, match_value)
