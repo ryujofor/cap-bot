@@ -15,7 +15,7 @@ from nonebot.params import EventMessage
 from nonebot.rule import to_me
 
 driver = get_driver()
-chat_api_key = str(getattr(driver.config, "image_api_key", ""))
+chat_api_key = str(getattr(driver.config, "CHAT_API_KEY", ""))
 chat_api_base = str(getattr(driver.config, "chat_api_base", "https://api.jucode.cn/v1"))
 
 # 每个聊天窗口的 JSON 文件存储目录
